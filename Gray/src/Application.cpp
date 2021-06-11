@@ -22,16 +22,14 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-
-
         glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5f, -0.5f);
-        glVertex2f(0.5f, -0.5f);
-        glVertex2f(0, (0.5f*1.732f));
+        glVertex2d(0.5f, -0.5f);
+        glVertex2d(-0.5f, -0.5f);
+        glVertex2d(0, (0.5*0.732));
         glEnd();
-
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
