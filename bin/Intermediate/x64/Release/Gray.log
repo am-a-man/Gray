@@ -1,0 +1,9 @@
+﻿  Application.cpp
+Application.obj : error LNK2001: unresolved external symbol glfwSwapBuffers
+Application.obj : error LNK2001: unresolved external symbol glfwTerminate
+Application.obj : error LNK2001: unresolved external symbol glfwPollEvents
+Application.obj : error LNK2001: unresolved external symbol glfwInit
+Application.obj : error LNK2001: unresolved external symbol glfwCreateWindow
+Application.obj : error LNK2001: unresolved external symbol glfwMakeContextCurrent
+Application.obj : error LNK2001: unresolved external symbol glfwWindowShouldClose
+C:\Users\Aman\Desktop\Open_Source\Gray\bin\x64\Release\Gray.exe : fatal error LNK1120: 7 unresolved externals
