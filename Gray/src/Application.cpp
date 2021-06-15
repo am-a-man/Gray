@@ -3,28 +3,50 @@
 #include <GLFW/glfw3.h>
 #include<iostream>
 #include<string>
+#include<fstream>
+#include<sstream>
+#include<tuple>
 
-
-static std::string vertexSource()
+static std::tuple<std::string, std::string> parseShader(const std::string& filepath)
 {
-    return
-        "#version 330 core\n"
-        "layout(location = 0) in vec4 position;\n"
-        "\n"
-        "void main(){\n"
-        "gl_Position = position ;}\n";
+    std::ifstream stream(filepath);
+    std::string line;
+    std::stringstream ss[2];
+
+    enum class shaderType {
+        NONE = -1, VERTEX = 0, FRAGMENT = 1
+    };
+
+    shaderType type = shaderType::NONE;
+
+    while (getline(stream, line))
+    {
+        if (line.find("#shader") != std::string::npos)
+        {
+            if (line.find("vertex") != std::string::npos)
+            {
+                type = shaderType::VERTEX;//set mode to vertex
+            }
+            else if (line.find("fragment") != std::string::npos)
+            {
+                ;//set mode to fragment
+                type = shaderType::FRAGMENT;
+            }
+        }
+        else {
+            if (type != shaderType::NONE)
+            {
+                ss[int(type)] << line <<"\n";
+            }
+        }
+
+
+    }
+    return std::tuple(ss[0].str(), ss[1].str());
+   
+
 }
 
-
-static std::string fragmentSource()
-{
-    return 
-        "#version 330 core\n"
-        "layout(location = 0) out vec4 color;\n"
-        "\n"
-        "void main(){\n"
-        "color = vec4(1.0 , 0.0 , 0.0 ,1.0);}\n";
-}
 
 static unsigned int compileShader(const int& shaderType, const std::string& source)
 {
@@ -137,12 +159,18 @@ int main(int argc, char** argv)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0);
     
-    
-    std::string vertexShader = vertexSource();
-    std::string fragmentShader = fragmentSource();
+//    std::string vertexShader = vertexSource();
+//    std::string fragmentShader = fragmentSource();
+
+
+    auto [vertexShader, fragmentShader] = parseShader("res/shaders/basic.shader"); // this will need the relative working directory
+    //and the working directory is the one where the executable is present, but the Visual studio debugger sets the working directory to "$(ProjectDir)" which is in the Gray working file 
+
+
+
+    //std::cout << vertexShader << fragmentShader;
     int shader = createShader(vertexShader, fragmentShader);
     glUseProgram(shader);
-
 
         /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
     /* Loop until the user closes the window */
@@ -164,6 +192,8 @@ int main(int argc, char** argv)
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    glDeleteProgram(shader);
 
     glfwTerminate();
     return 0;
