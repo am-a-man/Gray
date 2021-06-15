@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GLFW/glfw3.h>
+#include<stdlib.h>
 #include<iostream>
 #include<string>
 #include<fstream>
@@ -165,7 +166,7 @@ int main(int argc, char** argv)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
+    glfwSwapInterval(10);
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     if (glewInit() == GLEW_OK)
@@ -222,13 +223,27 @@ int main(int argc, char** argv)
     int shader = createShader(vertexShader, fragmentShader);
     GLCall(glUseProgram(shader));
 
+
+
+
+
+    int location = glGetUniformLocation(shader, "u_Color");
+    ASSERT(location != -1);
+
+
+
+
+
+
         /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
     /* Loop until the user closes the window */
 
     while (!glfwWindowShouldClose(window))
     {
+        GLCall(glUniform4f(location, float((rand()+26)%123)/123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
        /* ASSERT(GLCheckErrors());*/
         /* Render here */
+         
         
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
