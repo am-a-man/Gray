@@ -7,33 +7,9 @@
 #include<fstream>
 #include<sstream>
 #include<tuple>
-#define ASSERT(x) if (!(x)) __debugbreak(); // the underscores (__) in the beginning show that this is platform specific
-                                            // and it will only run on visual studio and not on other platforms like gcc/g++
-
-
-#define GLCall(x) GLClearErrors();\
-    x;\
-    ASSERT(GLCheckErrors(#x, __FILE__, __LINE__)) // these two __FILE__ and __LINE__ are not platform specific they are supported by all platforms
-                                                  // https://www.tutorialspoint.com/what-are-file-line-and-function-in-cplusplus
-
-
-static void GLClearErrors()
-{
-    while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLCheckErrors(const char* function, const char* file, const int line)
-{
-    int i = 0;
-    if(GLenum error = glGetError())
-    {
-        std::cout << "error caught: " << error <<" at line: "<<line<<" in function: "<<function<<" in file: "<<file<< std::endl;
-        return false;
-    }
-    return true;
-
-}
-
+#include"renderer.h"
+#include"indexBuffer.h"
+#include"vertexBuffer.h"
 
 static std::tuple<std::string, std::string> parseShader(const std::string& filepath)
 {
@@ -85,7 +61,7 @@ static unsigned int compileShader(const int& shaderType, const std::string& sour
     int result;
     GLCall(glGetShaderiv(customShader, GL_COMPILE_STATUS, &result));
 
-    //TODO : include error hadling: we are going to check what the compile status of glCompileShader is 
+    //TODO : include error handling: we are going to check what the compile status of glCompileShader is 
     // now since we can check that glCompileShader's return type is void 
     // we are going to use 
     if (result == 0)
@@ -187,15 +163,13 @@ int main(int argc, char** argv)
         std::cout << "Glew is working, all gl function pointers are loaded\n";
     else
         std::cout << "errors in Glew\n";
-    
-    unsigned int buffer;
+
 
     unsigned int vao;
     GLCall(glGenVertexArrays(1, &vao));
     GLCall(glBindVertexArray(vao));
 
 
-    GLCall(glGenBuffers(1, &buffer));
     float positions[] = {
          0.5f,-0.5f, // 0
         -0.5f, 0.5f, // 1
@@ -211,13 +185,15 @@ int main(int argc, char** argv)
 
 
 
+    vertexBuffer buffer(positions, 4 * 2*sizeof(float));
 
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, 4*2*sizeof(float),&positions,GL_STATIC_DRAW));
+
     GLCall(glEnableVertexAttribArray(0));  // this number is  the default vertex array object given in compatibility profile
                                            // whereas this is not an object in core profile
     GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));
     
+
+
     
 //    std::string vertexShader = vertexSource();
 //    std::string fragmentShader = fragmentSource();
@@ -225,20 +201,21 @@ int main(int argc, char** argv)
 
 
     /* start: adding index buffers */
-    unsigned int ibo; // ibo : index buffer object
-    GLCall(glGenBuffers(1, &ibo));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6  * sizeof(float), &indices, GL_STATIC_DRAW));
-
+    
+    indexBuffer ibo(indices, 6);
+    //unsigned int m_renderer_id1;
+    //GLCall(glGenBuffers(1, &m_renderer_id1));
+    //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_renderer_id1));
+    //GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), &indices, GL_STATIC_DRAW));
     /* end: adding index buffers*/
 
 
-    auto [vertexShader, fragmentShader] = parseShader("res/shaders/basic.shader"); // this will need the relative working directory
+    auto [vertexShaderSource, fragmentShaderSource] = parseShader("res/shaders/basic.shader"); // this will need the relative working directory
     //and the working directory is the one where the executable is present, but the Visual studio debugger sets the working directory to "$(ProjectDir)" which is in the Gray working file 
 
 
     //std::cout << vertexShader << fragmentShader;
-    int shader = createShader(vertexShader, fragmentShader);
+    int shader = createShader(vertexShaderSource, fragmentShaderSource);
     GLCall(glUseProgram(shader));
 
 
@@ -278,17 +255,19 @@ int main(int argc, char** argv)
         GLCall(glUniform4f(location, float((rand()+26)%123)/123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
         
             /* end : setting uniform */
-        
+
+      //  buffer.bind();
         //GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); /* do not need if using vertex array in core profile */
             /* start: setting vertex attributes */
-        //GLCall(glEnableVertexAttribArray(0));  // this number is  the default vertex array object given in compatibility profile
-                                                // whereas this is not an object in core profile
-                                                 /* do not need if using vertex array in core profile */
+        //GLCall(glEnableVertexAttribArray(0));  /*this number is  the default vertex array object given in compatibility profile*/
+                                                /* whereas this is not an object in core profile*/
+                                                /* do not need if using vertex array in core profile */
 
         //GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));  /* do not need if using vertex array in core profile */
             /* end : setting vertex attributes    */  
+        ibo.bind();
 
-
+            
         /*
         
         The reason why above vertex array method works:
@@ -299,7 +278,7 @@ int main(int argc, char** argv)
 
 
         */
-        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+        //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
 
         /* end : binding everything*/
          
