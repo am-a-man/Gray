@@ -155,6 +155,20 @@ int main(int argc, char** argv)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
+   
+
+
+    /* start : enbale the below program to use the program in core profile , gl version = 4.6 */
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    /* end: enable to use the program in core profile */
+
+
+
+
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
@@ -166,7 +180,7 @@ int main(int argc, char** argv)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(10);
+    glfwSwapInterval(20);
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     if (glewInit() == GLEW_OK)
@@ -176,6 +190,9 @@ int main(int argc, char** argv)
     
     unsigned int buffer;
 
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
 
 
     GLCall(glGenBuffers(1, &buffer));
@@ -196,9 +213,11 @@ int main(int argc, char** argv)
 
 
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, 6*2*sizeof(float),&positions,GL_STATIC_DRAW));
-    GLCall(glEnableVertexAttribArray(0));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, 4*2*sizeof(float),&positions,GL_STATIC_DRAW));
+    GLCall(glEnableVertexAttribArray(0));  // this number is  the default vertex array object given in compatibility profile
+                                           // whereas this is not an object in core profile
     GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));
+    
     
 //    std::string vertexShader = vertexSource();
 //    std::string fragmentShader = fragmentSource();
@@ -218,7 +237,6 @@ int main(int argc, char** argv)
     //and the working directory is the one where the executable is present, but the Visual studio debugger sets the working directory to "$(ProjectDir)" which is in the Gray working file 
 
 
-
     //std::cout << vertexShader << fragmentShader;
     int shader = createShader(vertexShader, fragmentShader);
     GLCall(glUseProgram(shader));
@@ -232,7 +250,12 @@ int main(int argc, char** argv)
 
 
 
-
+    /*start : unbinding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    GLCall(glBindVertexArray(0));
+    /* end : unbinding everything*/
 
 
         /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
@@ -240,11 +263,46 @@ int main(int argc, char** argv)
 
     while (!glfwWindowShouldClose(window))
     {
-        GLCall(glUniform4f(location, float((rand()+26)%123)/123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
+        GLCall(glClear(GL_COLOR_BUFFER_BIT));
+        GLCall(glBindVertexArray(vao));
+
        /* ASSERT(GLCheckErrors());*/
         /* Render here */
-         
+
+        /*start : binding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
+
+        GLCall(glUseProgram(shader));
         
+            /* start : Setting uniform : this is not a part of binding process but we need a bound shader to use a uniform */
+        
+        GLCall(glUniform4f(location, float((rand()+26)%123)/123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
+        
+            /* end : setting uniform */
+        
+        //GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); /* do not need if using vertex array in core profile */
+            /* start: setting vertex attributes */
+        //GLCall(glEnableVertexAttribArray(0));  // this number is  the default vertex array object given in compatibility profile
+                                                // whereas this is not an object in core profile
+                                                 /* do not need if using vertex array in core profile */
+
+        //GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));  /* do not need if using vertex array in core profile */
+            /* end : setting vertex attributes    */  
+
+
+        /*
+        
+        The reason why above vertex array method works:
+            1. we are linking the vertex buffer to the vertex array object, question is which line of code is actually doing this
+                1.  when we bind a vertex array and we bind a buffer, nothing actually links the two
+                2.  when we specify the vertexAttribPointer we are saying that index 0 of this vertex array is going to actually be bound to the currently bound glArrayBuffer
+                3.  if we want to bind a different buffer and then call glVertexAttribPointer with index 1after enabling it, then I would be saying that inside the array Buffer, the index 1 is pointing to a different vertex buffer
+
+
+        */
+        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
+        /* end : binding everything*/
+         
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
         
