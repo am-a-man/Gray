@@ -1,7 +1,7 @@
 #include"shader.h"
 #include<iostream>
 #include<GL/glew.h>
-
+#include"renderer.h"
 
 
 shader::shader(const std::string& filename)

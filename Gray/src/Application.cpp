@@ -1,4 +1,3 @@
-#include"renderer.h"
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GLFW/glfw3.h>
@@ -10,6 +9,7 @@
 #include"vertexArray.h"
 #include"vertexBufferLayout.h"
 #include"shader.h"
+#include"renderer.h"
 
 
 
@@ -58,7 +58,6 @@ int main(int argc, char** argv)
         std::cout << "errors in Glew\n";
 
 
-    unsigned int vao;
 
 
     {
@@ -98,23 +97,25 @@ int main(int argc, char** argv)
         GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
         GLCall(glBindVertexArray(0));
         /* end : unbinding everything*/
-
+//        renderer render;
 
             /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
         /* Loop until the user closes the window */
 
+        renderer render;
+
+
         while (!glfwWindowShouldClose(window))
         {
-            GLCall(glClear(GL_COLOR_BUFFER_BIT));                   
-            vao.bind();
+            render.clear();
             sh.bind();
             sh.setUniform("u_Color", float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0);
-            ibo.bind();
 
 
             /* draw call */
-            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+            //GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
            
+            render.draw(vao, ibo, sh);
 
 
             /* Swap front and back buffers */

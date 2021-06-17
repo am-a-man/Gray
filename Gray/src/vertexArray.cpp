@@ -1,9 +1,13 @@
 #include"vertexArray.h"
-#include"renderer.h"
+//#include"renderer.h"
 #include"GL/glew.h"
 #include<iostream>
+#include"vertexBufferLayout.h"
+
+
 vertexArray::vertexArray()
 {
+	std::cout << "this is being calle dfrom vertexArray.cpp\n";
 	GLCall(glGenVertexArrays(1, &m_rendererID));
 	//GLCall(glBindVertexArray(vao));
 }
@@ -35,7 +39,7 @@ void vertexArray::addBuffer(const vertexBuffer& vb, const vertexBufferLayout& la
 	bind();
 	const auto& elements = layout.getElements();
 	unsigned int offset = 0;
-	for (int i = 0; i < elements.size(); i++)
+	for (unsigned int i = 0; i < elements.size(); i++)
 	{
 		const auto& element = elements[i];
 		GLCall(glEnableVertexAttribArray(i));  // this number is  the default vertex array object given in compatibility profile

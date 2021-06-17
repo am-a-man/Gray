@@ -18,3 +18,19 @@ bool GLCheckErrors(const char* function, const char* file, const int line)
     return true;
 
 }
+
+
+void renderer::draw(const vertexArray& vao, const indexBuffer& ibo, const shader& shade) const
+{
+    vao.bind();
+    shade.bind();
+    ibo.bind();
+    GLCall(glDrawElements(GL_TRIANGLES, ibo.getcount() , GL_UNSIGNED_INT, nullptr));
+}
+
+
+
+void renderer::clear() const
+{
+    GLCall(glClear(GL_COLOR_BUFFER_BIT));
+}
