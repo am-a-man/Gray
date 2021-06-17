@@ -1,3 +1,4 @@
+#include"renderer.h"
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GLFW/glfw3.h>
@@ -7,9 +8,10 @@
 #include<fstream>
 #include<sstream>
 #include<tuple>
-#include"renderer.h"
 #include"indexBuffer.h"
 #include"vertexBuffer.h"
+#include"vertexArray.h"
+#include"vertexBufferLayout.h"
 
 static std::tuple<std::string, std::string> parseShader(const std::string& filepath)
 {
@@ -122,16 +124,17 @@ static int createShader(const std::string& vertexShader, const std::string& frag
 }
 
 
+
 int main(int argc, char** argv)
 {
     GLFWwindow* window;
 
-   
+
 
     /* Initialize the library */
     if (!glfwInit())
         return -1;
-   
+
 
 
     /* start : enbale the below program to use the program in core profile , gl version = 4.6 */
@@ -139,7 +142,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
+
     /* end: enable to use the program in core profile */
 
 
@@ -166,94 +169,94 @@ int main(int argc, char** argv)
 
 
     unsigned int vao;
-    GLCall(glGenVertexArrays(1, &vao));
-    GLCall(glBindVertexArray(vao));
 
 
-    float positions[] = {
-         0.5f,-0.5f, // 0
-        -0.5f, 0.5f, // 1
-         0.5f, 0.9f, // 2 
-         0.99f,-0.5f  // 3
-    };
-
-
-    unsigned int indices[] = {
-        0,1,2,
-        2,3,0
-    };
-
-
-
-    vertexBuffer buffer(positions, 4 * 2*sizeof(float));
-
-
-    GLCall(glEnableVertexAttribArray(0));  // this number is  the default vertex array object given in compatibility profile
-                                           // whereas this is not an object in core profile
-    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));
-    
-
-
-    
-//    std::string vertexShader = vertexSource();
-//    std::string fragmentShader = fragmentSource();
-
-
-
-    /* start: adding index buffers */
-    
-    indexBuffer ibo(indices, 6);
-    //unsigned int m_renderer_id1;
-    //GLCall(glGenBuffers(1, &m_renderer_id1));
-    //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_renderer_id1));
-    //GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), &indices, GL_STATIC_DRAW));
-    /* end: adding index buffers*/
-
-
-    auto [vertexShaderSource, fragmentShaderSource] = parseShader("res/shaders/basic.shader"); // this will need the relative working directory
-    //and the working directory is the one where the executable is present, but the Visual studio debugger sets the working directory to "$(ProjectDir)" which is in the Gray working file 
-
-
-    //std::cout << vertexShader << fragmentShader;
-    int shader = createShader(vertexShaderSource, fragmentShaderSource);
-    GLCall(glUseProgram(shader));
-
-
-
-
-
-    int location = glGetUniformLocation(shader, "u_Color");
-    ASSERT(location != -1);
-
-
-
-    /*start : unbinding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
-    GLCall(glUseProgram(0));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    GLCall(glBindVertexArray(0));
-    /* end : unbinding everything*/
-
-
-        /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
-    /* Loop until the user closes the window */
-
-    while (!glfwWindowShouldClose(window))
     {
-        GLCall(glClear(GL_COLOR_BUFFER_BIT));
-        GLCall(glBindVertexArray(vao));
+        float positions[] = {
+             0.5f,-0.5f, // 0
+            -0.5f, 0.5f, // 1
+             0.5f, 0.9f, // 2 
+             0.99f,-0.5f  // 3
+        };
 
-       /* ASSERT(GLCheckErrors());*/
-        /* Render here */
 
-        /*start : binding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
+        unsigned int indices[] = {
+            0,1,2,
+            2,3,0
+        };
 
+
+        vertexArray vao;
+        vertexBuffer buffer(positions, 4 * 2 * sizeof(float));
+        vertexBufferLayout layout;
+        layout.push<float>(2);
+
+        vao.addBuffer(buffer, layout);
+
+  
+      
+
+
+        //    std::string vertexShader = vertexSource();
+        //    std::string fragmentShader = fragmentSource();
+
+
+
+            /* start: adding index buffers */
+
+        indexBuffer ibo(indices, 6);
+        //unsigned int m_renderer_id1;
+        //GLCall(glGenBuffers(1, &m_renderer_id1));
+        //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_renderer_id1));
+        //GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), &indices, GL_STATIC_DRAW));
+        /* end: adding index buffers*/
+
+
+        auto [vertexShaderSource, fragmentShaderSource] = parseShader("res/shaders/basic.shader"); // this will need the relative working directory
+        //and the working directory is the one where the executable is present, but the Visual studio debugger sets the working directory to "$(ProjectDir)" which is in the Gray working file 
+
+
+        //std::cout << vertexShader << fragmentShader;
+        int shader = createShader(vertexShaderSource, fragmentShaderSource);
         GLCall(glUseProgram(shader));
+
+
+
+
+
+        int location = glGetUniformLocation(shader, "u_Color");
+        ASSERT(location != -1);
+
+
+
+        /*start : unbinding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
+        GLCall(glUseProgram(0));
+        GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+        GLCall(glBindVertexArray(0));
+        /* end : unbinding everything*/
+
+
+            /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
+        /* Loop until the user closes the window */
+
+        while (!glfwWindowShouldClose(window))
+        {
+            GLCall(glClear(GL_COLOR_BUFFER_BIT));
         
+            //GLCall(glBindVertexArray(vao));
+            vao.bind();
+            /* ASSERT(GLCheckErrors());*/
+             /* Render here */
+
+             /*start : binding everything : because in our actual program kwith many elements we have to bind the state everytime for each element*/
+
+            GLCall(glUseProgram(shader));
+
             /* start : Setting uniform : this is not a part of binding process but we need a bound shader to use a uniform */
-        
-        GLCall(glUniform4f(location, float((rand()+26)%123)/123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
-        
+
+            GLCall(glUniform4f(location, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0));
+
             /* end : setting uniform */
 
       //  buffer.bind();
@@ -264,36 +267,37 @@ int main(int argc, char** argv)
                                                 /* do not need if using vertex array in core profile */
 
         //GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0));  /* do not need if using vertex array in core profile */
-            /* end : setting vertex attributes    */  
-        ibo.bind();
-
-            
-        /*
-        
-        The reason why above vertex array method works:
-            1. we are linking the vertex buffer to the vertex array object, question is which line of code is actually doing this
-                1.  when we bind a vertex array and we bind a buffer, nothing actually links the two
-                2.  when we specify the vertexAttribPointer we are saying that index 0 of this vertex array is going to actually be bound to the currently bound glArrayBuffer
-                3.  if we want to bind a different buffer and then call glVertexAttribPointer with index 1after enabling it, then I would be saying that inside the array Buffer, the index 1 is pointing to a different vertex buffer
+            /* end : setting vertex attributes    */
+            ibo.bind();
 
 
-        */
-        //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+            /*
 
-        /* end : binding everything*/
-         
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+            The reason why above vertex array method works:
+                1. we are linking the vertex buffer to the vertex array object, question is which line of code is actually doing this
+                    1.  when we bind a vertex array and we bind a buffer, nothing actually links the two
+                    2.  when we specify the vertexAttribPointer we are saying that index 0 of this vertex array is going to actually be bound to the currently bound glArrayBuffer
+                    3.  if we want to bind a different buffer and then call glVertexAttribPointer with index 1after enabling it, then I would be saying that inside the array Buffer, the index 1 is pointing to a different vertex buffer
 
-        
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
 
-        /* Poll for and process events */
-        glfwPollEvents();
+            */
+            //GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
+            /* end : binding everything*/
+
+            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+           
+
+
+            /* Swap front and back buffers */
+            glfwSwapBuffers(window);
+
+            /* Poll for and process events */
+            glfwPollEvents();
+        }
+
+        GLCall(glDeleteProgram(shader));
     }
-
-    GLCall(glDeleteProgram(shader));
-
     glfwTerminate();
     return 0;
 }
