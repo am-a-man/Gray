@@ -10,7 +10,7 @@
 #include"vertexBufferLayout.h"
 #include"shader.h"
 #include"renderer.h"
-
+#include"texture.h"
 
 
 
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     /* Initialize the library */
     if (!glfwInit())
         return -1;
-
+  
 
 
     /* start : enbale the below program to use the program in core profile , gl version = 4.6 */
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(720, 720, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -62,10 +62,10 @@ int main(int argc, char** argv)
 
     {
         float positions[] = {
-             0.5f,-0.5f, // 0
-            -0.5f, 0.5f, // 1
-             0.5f, 0.9f, // 2 
-             0.99f,-0.5f  // 3
+            -0.9f,-0.9f, 0.0f , 0.0f , // 0
+             0.9f,-0.9f, 1.0f , 0.0f , // 1
+             0.9f, 0.9f, 1.0f , 1.0f , // 2 
+            -0.9f, 0.9f, 0.0f , 1.0f , // 3
         };
 
    
@@ -76,8 +76,9 @@ int main(int argc, char** argv)
 
 
         vertexArray vao;
-        vertexBuffer buffer(positions, 4 * 2 * sizeof(float));
+        vertexBuffer buffer(positions, 4 * 4 * sizeof(float));
         vertexBufferLayout layout;
+        layout.push<float>(2);
         layout.push<float>(2);
 
         vao.addBuffer(buffer, layout);
@@ -103,14 +104,22 @@ int main(int argc, char** argv)
         /* Loop until the user closes the window */
 
         renderer render;
+        texture texture("res/images/logo.png");/* very important, one thing that we need to do is to tell our shader which texture slot to sample from */
+                                               /* and the way we are going to do that is by using Uniforms */
+                                               /* this is isn't really a integer slot, thisis basically a sampler slot */
+                                               /* TODO: we need to send an integer uniform to our shader and that integer is the slot ,*/
+                                               /* and in the sampler code we can use that integer/sampler to sample the texture and do what we want to do */
 
-
+     
         while (!glfwWindowShouldClose(window))
         {
             render.clear();
             sh.bind();
-            sh.setUniform("u_Color", float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0);
+            sh.setUniform4f("u_Color", float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0);
+           
 
+            texture.bind(0);
+            sh.setUniform1i("u_Texture", 0);/* see the comments near texture variable declaration (above this while loop) */
 
             /* draw call */
             //GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));

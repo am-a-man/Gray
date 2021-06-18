@@ -35,21 +35,56 @@ void shader::unbind() const
 }
 
 
-int shader::getUniformLocation(const char* name)
+int shader::getUniformLocation(const std::string& name)
 {
-    int location = glGetUniformLocation(m_rendererID, name);
-    ASSERT(location != -1);
+    
+    if (m_uniformLocationCache[name])
+        return m_uniformLocationCache[name];
+
+    GLCall(int location = glGetUniformLocation(m_rendererID,name.c_str()));
+    if (location == -1)
+    {
+        std::cout << "word " << name << " not found\n";
+        ASSERT(false);
+    }
+    m_uniformLocationCache[name] = location;
     return location;
 }
 
 
 
-void shader::setUniform(const char* name, float f0, float f1, float f2, float f3)
+void shader::setUniform4f(const char* name, float f0, float f1, float f2, float f3)
 {
     GLCall(glUniform4f(getUniformLocation(name), f0, f1, f2, f3));
 }
 
 
+
+void shader::setUniform3f(const char* name, float f0, float f1, float f2)
+{
+    GLCall(glUniform3f(getUniformLocation(name), f0, f1, f2));
+
+}
+void shader::setUniform2f(const char* name, float f0, float f1)
+{
+    GLCall(glUniform2f(getUniformLocation(name), f0, f1));
+
+}
+void shader::setUniform1f(const char* name, float f0)
+{
+    GLCall(glUniform1f(getUniformLocation(name), f0));
+
+}
+void shader::setUniform1i(const char* name, int i0)
+{
+    GLCall(glUniform1i(getUniformLocation(name), i0));
+
+}
+void shader::setUniform2i(const char* name, int i0, int i1)
+{
+    GLCall(glUniform2i(getUniformLocation(name), i0, i1));
+
+}
 
 
 unsigned int shader::compileShader(const int& shaderType, const std::string& source)
@@ -119,6 +154,7 @@ unsigned int shader::createShader(const std::string& vertexShader, const std::st
     GLCall(glValidateProgram(program));
     GLCall(glDeleteShader(fs));
     GLCall(glDeleteShader(vs));
+
     return program;
 }
 
