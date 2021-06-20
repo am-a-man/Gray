@@ -59,6 +59,11 @@ int main(int argc, char** argv)
 
 
 
+    /* start : enabling blending */
+    GLCall(glEnable(GL_BLEND));
+    GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    /* end : enabling blending */
+
 
     {
         float positions[] = {
@@ -103,6 +108,8 @@ int main(int argc, char** argv)
             /*when we actually apply this we define vertex as struct so ultimately we have to give in size of struct in offset*/
         /* Loop until the user closes the window */
 
+
+
         renderer render;
         texture texture("res/images/logo.png");/* very important, one thing that we need to do is to tell our shader which texture slot to sample from */
                                                /* and the way we are going to do that is by using Uniforms */
@@ -113,6 +120,9 @@ int main(int argc, char** argv)
      
         while (!glfwWindowShouldClose(window))
         {
+
+
+
             render.clear();
             sh.bind();
             sh.setUniform4f("u_Color", float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, float((rand() + 26) % 123) / 123, 1.0);
