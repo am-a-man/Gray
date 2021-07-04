@@ -7,7 +7,6 @@
 
 vertexArray::vertexArray()
 {
-	std::cout << "this is being calle dfrom vertexArray.cpp\n";
 	GLCall(glGenVertexArrays(1, &m_rendererID));
 	//GLCall(glBindVertexArray(vao));
 }
